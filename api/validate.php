@@ -1,47 +1,32 @@
 <?php
 
-header('Access-Control-Allow-Headers: *');
+declare(strict_types=1);
 
-use \Firebase\JWT\JWT;
-
-require_once('./cors.php');
+use Firebase\JWT\JWT;
 
 require_once('../vendor/autoload.php');
-include_once './config/database.php';
 
 if (! preg_match('/Bearer\s(\S+)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
-    header('HTTP/1.0 401 Bad Request');
+    header('HTTP/1.0 400 Bad Request');
     echo 'Token not found in request';
     exit;
 }
 
-$secret_key = "YOUR_SECRET_KEY";
-$databaseService = new DatabaseService();
-$conn = $databaseService->getConnection();
-
 $jwt = $matches[1];
-if (!$jwt) {
-    header('HTTP/1.0 402 Bad Request');
+if (! $jwt) {
+    header('HTTP/1.0 400 Bad Request');
     exit;
 }
 
- 
-    try {
- 
-        $decoded = JWT::decode($jwt, $secret_key, array('HS256'));
+$secretKey  = 'B9aNmb6lJXWUZ0VHlYQPk6QG3L3cHTnn';
+$token = JWT::decode($jwt, $secretKey, ['HS512']);
+$now = new DateTimeImmutable();
+$serverName = "your.domain.name";
 
-        echo json_encode(array(
-            "message" => "Access granted: ".$jwt,
-        ));
- 
-    }catch (Exception $e){
- 
-    http_response_code(401);
- 
-    echo json_encode(array(
-        "message" => "Access denied.",
-        "error" => $e->getMessage()
-    ));
- 
+if ($token->iss !== $serverName ||
+    $token->nbf > $now->getTimestamp() ||
+    $token->exp < $now->getTimestamp())
+{
+    header('HTTP/1.1 401 Unauthorized');
+    exit;
 }
-?>
