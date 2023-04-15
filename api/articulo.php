@@ -16,7 +16,7 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
     $articulos = mysqli_query($db_conn, "SELECT * FROM `articulo`");
     if (mysqli_num_rows($articulos) > 0) {
         $articulos = mysqli_fetch_all($articulos, MYSQLI_ASSOC);
-        echo json_encode(["status" => "success", "msg"=> "Articulos enontrados exitosamente", "articulos" => $articulos]);
+        echo json_encode(["status" => "success", "msg"=> "Articulos enontrados exitosamente", "data" => $articulos]);
     } else {
         echo json_encode(["status" => "error", "msg"=> "No hay articulos disponibles"]);
     }
